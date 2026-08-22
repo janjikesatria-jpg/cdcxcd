@@ -16,36 +16,102 @@ export const ScalevCheckoutSection: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    // Forward UTM params and fbclid from parent window into iframe URL if available
+    if (typeof window !== 'undefined' && iframeRef.current) {
+      try {
+        const currentSearch = window.location.search;
+        if (currentSearch) {
+          const baseUrl = 'https://pria-seratus-persen.myscalev.com/landing-page-baru';
+          iframeRef.current.src = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}${currentSearch.replace(/^\?/, '')}`;
+        }
+      } catch (err) {
+        console.error('Error forwarding query params:', err);
+      }
+    }
+
     const handleMessage = (e: MessageEvent) => {
-      // Scalev sends messages from this origin
-      if (
+      // Check origin
+      const isScalevOrigin =
         e.origin === 'https://pria-seratus-persen.myscalev.com' ||
         e.origin.includes('myscalev.com') ||
         e.origin.includes('scalev.id') ||
-        e.origin.includes('scalev.com')
-      ) {
-        // 1. Redirect if data is a valid URL
-        if (typeof e.data === 'string') {
-          try {
-            const parsedUrl = new URL(e.data);
-            if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
-              window.location.href = e.data;
-              return;
-            }
-          } catch (_) {
-            // not a direct URL string
-          }
+        e.origin.includes('scalev.com');
 
-          // 2. Parse JSON message for height resize
+      if (!isScalevOrigin && typeof e.data !== 'string' && typeof e.data !== 'object') {
+        return;
+      }
+
+      const fbqTrack = (eventName: string, params?: Record<string, unknown>) => {
+        if (typeof window !== 'undefined' && (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq) {
           try {
-            const message = JSON.parse(e.data);
-            if (message && message.type === 'resize' && typeof message.height === 'number') {
-              setIframeHeight(Math.max(message.height + 20, 500));
-              setIsLoading(false);
-            }
-          } catch (_) {
-            // not json
+            (window as unknown as { fbq: (...args: unknown[]) => void }).fbq('track', eventName, params || {});
+          } catch (err) {
+            console.error('Meta Pixel track error:', err);
           }
+        }
+      };
+
+      // 1. Handle String data
+      if (typeof e.data === 'string') {
+        // Redirect if data is a valid URL
+        try {
+          const parsedUrl = new URL(e.data);
+          if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+            // Track Purchase before redirecting
+            fbqTrack('Purchase', {
+              value: 99000,
+              currency: 'IDR',
+              content_name: 'Ebook Kuasai Pikirannya, Trigger Gairahnya',
+            });
+            window.location.href = e.data;
+            return;
+          }
+        } catch (_) {
+          // not a direct URL string
+        }
+
+        // Parse JSON message
+        try {
+          const msg = JSON.parse(e.data);
+          processScalevMessage(msg);
+        } catch (_) {
+          // not json
+        }
+      } else if (typeof e.data === 'object' && e.data !== null) {
+        // Handle Object data directly
+        processScalevMessage(e.data);
+      }
+
+      function processScalevMessage(message: any) {
+        if (!message) return;
+
+        // Auto-resize
+        if (message.type === 'resize' && typeof message.height === 'number') {
+          setIframeHeight(Math.max(message.height + 20, 500));
+          setIsLoading(false);
+        }
+
+        // Scalev Event Dispatches (e.g. InitiateCheckout, AddToCart, Purchase, Lead)
+        if (message.event || message.type === 'scalev_event' || message.type === 'event') {
+          const evt = message.event || message.eventName || message.name;
+          const params = message.params || message.data || {
+            value: 99000,
+            currency: 'IDR',
+            content_name: 'Ebook Kuasai Pikirannya, Trigger Gairahnya',
+          };
+
+          if (evt) {
+            fbqTrack(evt, params);
+          }
+        }
+
+        // Handle Scalev order created / submitted
+        if (message.type === 'order_created' || message.action === 'checkout_completed') {
+          fbqTrack('Purchase', {
+            value: 99000,
+            currency: 'IDR',
+            content_name: 'Ebook Kuasai Pikirannya, Trigger Gairahnya',
+          });
         }
       }
     };
