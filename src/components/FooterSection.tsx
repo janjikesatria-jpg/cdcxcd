@@ -17,7 +17,7 @@ export const FooterSection: React.FC = () => {
             <ShieldCheck className="w-4 h-4 text-green-400" /> Transaksi 100% Aman
           </span>
           <span className="flex items-center gap-1">
-            <Mail className="w-4 h-4 text-blue-400" /> havedigital.id@gmail.com
+            <Mail className="w-4 h-4 text-blue-400" /> info@infopdkt.id
           </span>
         </div>
 
