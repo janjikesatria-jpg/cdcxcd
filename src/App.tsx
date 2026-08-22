@@ -69,7 +69,7 @@ export default function App() {
         {/* 11. FAQ Section */}
         <FaqSection onCtaClick={scrollToOrderSection} />
 
-        {/* 12. Styled Scalev Checkout Form Section */}
+        {/* 12. Scalev Checkout Form Section with Tracking */}
         <ScalevCheckoutSection />
 
         {/* 13. Footer Section */}
