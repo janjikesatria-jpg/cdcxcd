@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { TopNotification } from './components/TopNotification';
 import { HeroSection } from './components/HeroSection';
 import { TransformationSection } from './components/TransformationSection';
@@ -11,15 +11,11 @@ import { MindsetSection } from './components/MindsetSection';
 import { PromoCountdownSection } from './components/PromoCountdownSection';
 import { FinalStorySection } from './components/FinalStorySection';
 import { FaqSection } from './components/FaqSection';
-import { CustomCheckoutSection } from './components/CustomCheckoutSection';
-import { OrderSuccessModal } from './components/OrderSuccessModal';
+import { ScalevCheckoutSection } from './components/ScalevCheckoutSection';
 import { StickyBottomBar } from './components/StickyBottomBar';
 import { FooterSection } from './components/FooterSection';
-import { OrderData } from './types';
 
 export default function App() {
-  const [completedOrder, setCompletedOrder] = useState<OrderData | null>(null);
-
   const scrollToOrderSection = () => {
     if (typeof window !== 'undefined' && (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq) {
       (window as unknown as { fbq: (...args: unknown[]) => void }).fbq('track', 'InitiateCheckout', {
@@ -31,10 +27,6 @@ export default function App() {
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  };
-
-  const handleOrderSuccess = (order: OrderData) => {
-    setCompletedOrder(order);
   };
 
   return (
@@ -77,8 +69,8 @@ export default function App() {
         {/* 11. FAQ Section */}
         <FaqSection onCtaClick={scrollToOrderSection} />
 
-        {/* 12. Custom Sleek Checkout Form Section */}
-        <CustomCheckoutSection onOrderSuccess={handleOrderSuccess} />
+        {/* 12. Styled Scalev Checkout Form Section */}
+        <ScalevCheckoutSection />
 
         {/* 13. Footer Section */}
         <FooterSection />
@@ -86,14 +78,6 @@ export default function App() {
 
       {/* Sticky Bottom Bar for instant purchase */}
       <StickyBottomBar onCtaClick={scrollToOrderSection} />
-
-      {/* Interactive Order Completion / Payment Modal */}
-      {completedOrder && (
-        <OrderSuccessModal
-          order={completedOrder}
-          onClose={() => setCompletedOrder(null)}
-        />
-      )}
     </div>
   );
 }
