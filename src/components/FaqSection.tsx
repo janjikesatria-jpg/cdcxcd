@@ -15,7 +15,7 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ onCtaClick }) => {
     },
     {
       q: 'Kapan dan bagaimana saya menerima ebooknya?',
-      a: 'Akses instan 24 jam! Begitu pembayaran Anda terverifikasi (otomatis via QRIS / Bank Transfer), link download akan langsung tampil di layar konfirmasi dan otomatis dikirimkan ke WhatsApp & Email Anda.',
+      a: 'Akses instan 24 jam! Begitu pembayaran Anda terverifikasi via QRIS, link download akan langsung tampil di layar konfirmasi dan otomatis dikirimkan ke Email Anda.',
     },
     {
       q: 'Apakah cara ini cocok untuk pria yang pemalu / susah ngobrol?',

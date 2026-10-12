@@ -1,5 +1,4 @@
 import React from 'react';
-import { TopNotification } from './components/TopNotification';
 import { HeroSection } from './components/HeroSection';
 import { TransformationSection } from './components/TransformationSection';
 import { PainPointsSection } from './components/PainPointsSection';
@@ -11,7 +10,7 @@ import { MindsetSection } from './components/MindsetSection';
 import { PromoCountdownSection } from './components/PromoCountdownSection';
 import { FinalStorySection } from './components/FinalStorySection';
 import { FaqSection } from './components/FaqSection';
-import { ScalevCheckoutSection } from './components/ScalevCheckoutSection';
+import { QrisCheckoutSection } from './components/QrisCheckoutSection';
 import { StickyBottomBar } from './components/StickyBottomBar';
 import { FooterSection } from './components/FooterSection';
 
@@ -31,9 +30,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#222222] font-['Poppins',sans-serif] flex flex-col items-center">
-      {/* Top Banner Notice */}
-      <TopNotification />
-
       {/* Main Container - Single column mobile-first sales letter layout */}
       <main className="w-full max-w-[560px] bg-white shadow-sm flex flex-col flex-1 pb-16">
         {/* 1. Hero Section */}
@@ -69,8 +65,8 @@ export default function App() {
         {/* 11. FAQ Section */}
         <FaqSection onCtaClick={scrollToOrderSection} />
 
-        {/* 12. Scalev Checkout Form Section with Tracking */}
-        <ScalevCheckoutSection />
+        {/* 12. QRIS Checkout Flow Section (Form -> Bayar QRIS -> Kirim Bukti -> Download PDF) */}
+        <QrisCheckoutSection />
 
         {/* 13. Footer Section */}
         <FooterSection />
