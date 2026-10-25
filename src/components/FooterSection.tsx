@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Mail, Instagram } from 'lucide-react';
+import { ShieldCheck, Mail } from 'lucide-react';
 
 export const FooterSection: React.FC = () => {
   return (

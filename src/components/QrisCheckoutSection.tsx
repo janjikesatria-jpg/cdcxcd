@@ -146,6 +146,28 @@ export const QrisCheckoutSection: React.FC = () => {
     setFormErrors({});
     setCurrentStep(2);
 
+    // Track GTM dataLayer Begin Checkout
+    if (typeof window !== 'undefined') {
+      const w = window as unknown as { dataLayer?: Array<Record<string, unknown>> };
+      w.dataLayer = w.dataLayer || [];
+      w.dataLayer.push({
+        event: 'begin_checkout',
+        ecommerce: {
+          currency: 'IDR',
+          value: PRICE,
+          items: [
+            {
+              item_id: 'CMW-EBOOK-01',
+              item_name: 'Ebook Kuasai Pikirannya, Trigger Gairahnya',
+              item_category: 'Ebook Digital',
+              price: PRICE,
+              quantity: 1,
+            },
+          ],
+        },
+      });
+    }
+
     // Track Meta Pixel InitiateCheckout
     if (typeof window !== 'undefined' && (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq) {
       try {
@@ -194,6 +216,8 @@ export const QrisCheckoutSection: React.FC = () => {
     setProofError('');
     setAiStatusMessage('Sistem AI sedang menganalisis keaslian struk pembayaran...');
 
+    const transactionId = `ORD-${Date.now()}`;
+
     try {
       const response = await fetch('/api/verify-proof', {
         method: 'POST',
@@ -204,7 +228,9 @@ export const QrisCheckoutSection: React.FC = () => {
           imageBase64: proofPreview,
           mimeType: proofFile.type || 'image/jpeg',
           customerName: formData.fullName,
+          customerEmail: formData.email,
           expectedAmount: PRICE,
+          transactionId,
         }),
       });
 
@@ -215,6 +241,61 @@ export const QrisCheckoutSection: React.FC = () => {
       if (data.isValid) {
         setAiVerificationResult(data);
         setCurrentStep(4);
+
+        // Track GTM (Google Tag Manager) Conversion Events
+        if (typeof window !== 'undefined') {
+          const w = window as unknown as { dataLayer?: Array<Record<string, unknown>> };
+          w.dataLayer = w.dataLayer || [];
+
+          // 1. Standard GA4 & GTM Ecommerce Purchase Event
+          w.dataLayer.push({
+            event: 'purchase',
+            event_name: 'purchase',
+            transaction_id: transactionId,
+            value: PRICE,
+            currency: 'IDR',
+            ecommerce: {
+              transaction_id: transactionId,
+              value: PRICE,
+              currency: 'IDR',
+              items: [
+                {
+                  item_id: 'CMW-EBOOK-01',
+                  item_name: 'Ebook Kuasai Pikirannya, Trigger Gairahnya',
+                  item_category: 'Ebook Digital',
+                  price: PRICE,
+                  quantity: 1,
+                },
+              ],
+            },
+            customer_data: {
+              name: formData.fullName,
+              email: formData.email,
+            },
+          });
+
+          // 2. Custom Conversion Event (for Google Ads & GTM Custom Event Triggers)
+          w.dataLayer.push({
+            event: 'conversion',
+            event_category: 'Ecommerce',
+            event_action: 'Success Payment',
+            event_label: 'QRIS Ahli PDKT',
+            transaction_id: transactionId,
+            value: PRICE,
+            currency: 'IDR',
+          });
+
+          // 3. Custom payment_success event
+          w.dataLayer.push({
+            event: 'payment_success',
+            transaction_id: transactionId,
+            payment_method: 'QRIS',
+            merchant: MERCHANT_NAME,
+            amount: PRICE,
+            customer_name: formData.fullName,
+            customer_email: formData.email,
+          });
+        }
 
         // Track Meta Pixel Purchase
         if (typeof window !== 'undefined' && (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq) {

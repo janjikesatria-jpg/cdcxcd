@@ -65,7 +65,7 @@ export default function App() {
         {/* 11. FAQ Section */}
         <FaqSection onCtaClick={scrollToOrderSection} />
 
-        {/* 12. QRIS Checkout Flow Section (Form -> Bayar QRIS -> Kirim Bukti -> Download PDF) */}
+        {/* 12. QRIS Interactive Checkout Flow */}
         <QrisCheckoutSection />
 
         {/* 13. Footer Section */}
