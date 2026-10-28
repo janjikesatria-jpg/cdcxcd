@@ -10,18 +10,46 @@ import { MindsetSection } from './components/MindsetSection';
 import { PromoCountdownSection } from './components/PromoCountdownSection';
 import { FinalStorySection } from './components/FinalStorySection';
 import { FaqSection } from './components/FaqSection';
-import { QrisCheckoutSection } from './components/QrisCheckoutSection';
+import { ScalevCheckoutSection } from './components/ScalevCheckoutSection';
 import { StickyBottomBar } from './components/StickyBottomBar';
 import { FooterSection } from './components/FooterSection';
 
 export default function App() {
   const scrollToOrderSection = () => {
-    if (typeof window !== 'undefined' && (window as unknown as { fbq?: (...args: unknown[]) => void }).fbq) {
-      (window as unknown as { fbq: (...args: unknown[]) => void }).fbq('track', 'InitiateCheckout', {
-        value: 99000,
-        currency: 'IDR',
-      });
+    if (typeof window !== 'undefined') {
+      // 1. Meta Pixel InitiateCheckout
+      const winWithFbq = window as unknown as { fbq?: (...args: unknown[]) => void };
+      if (winWithFbq.fbq) {
+        winWithFbq.fbq('track', 'InitiateCheckout', {
+          value: 99000,
+          currency: 'IDR',
+        });
+      }
+
+      // 2. Google Tag (gtag.js) begin_checkout
+      const winWithGtag = window as unknown as { gtag?: (...args: unknown[]) => void };
+      if (winWithGtag.gtag) {
+        winWithGtag.gtag('event', 'begin_checkout', {
+          value: 99000,
+          currency: 'IDR',
+          items: [{ item_name: 'Ebook Ahli PDKT', price: 99000 }],
+        });
+      }
+
+      // 3. Google Tag Manager dataLayer event
+      const winWithDl = window as unknown as { dataLayer?: unknown[] };
+      if (Array.isArray(winWithDl.dataLayer)) {
+        winWithDl.dataLayer.push({
+          event: 'begin_checkout',
+          ecommerce: {
+            value: 99000,
+            currency: 'IDR',
+            items: [{ item_name: 'Ebook Ahli PDKT', price: 99000 }],
+          },
+        });
+      }
     }
+
     const el = document.getElementById('order-section');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -65,8 +93,8 @@ export default function App() {
         {/* 11. FAQ Section */}
         <FaqSection onCtaClick={scrollToOrderSection} />
 
-        {/* 12. QRIS Interactive Checkout Flow */}
-        <QrisCheckoutSection />
+        {/* 12. Scalev Checkout Section (landing-page-baru) */}
+        <ScalevCheckoutSection />
 
         {/* 13. Footer Section */}
         <FooterSection />

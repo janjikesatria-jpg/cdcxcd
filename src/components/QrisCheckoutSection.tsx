@@ -289,12 +289,26 @@ export const QrisCheckoutSection: React.FC = () => {
           w.dataLayer.push({
             event: 'payment_success',
             transaction_id: transactionId,
-            payment_method: 'QRIS',
+            payment_method: MERCHANT_NAME,
             merchant: MERCHANT_NAME,
             amount: PRICE,
             customer_name: formData.fullName,
             customer_email: formData.email,
           });
+        }
+
+        // Track Google Ads gtag conversion directly
+        if (typeof window !== 'undefined' && (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag) {
+          try {
+            (window as unknown as { gtag: (...args: unknown[]) => void }).gtag('event', 'conversion', {
+              send_to: 'AW-18107751278',
+              value: PRICE,
+              currency: 'IDR',
+              transaction_id: transactionId,
+            });
+          } catch (err) {
+            console.error('gtag conversion error:', err);
+          }
         }
 
         // Track Meta Pixel Purchase

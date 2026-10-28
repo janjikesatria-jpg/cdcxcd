@@ -7,45 +7,71 @@ export const ScalevCheckoutSection: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const resizeIframe = (height: number) => {
+      setIframeHeight(height);
+      if (iframe) {
+        iframe.style.height = `${height}px`;
+      }
+    };
+
+    const isUrl = (string: unknown) => {
+      if (typeof string !== 'string') return false;
+      try {
+        new URL(string);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    };
+
+    const isJSONObject = (string: unknown) => {
+      if (typeof string !== 'string') return false;
+      try {
+        const parsed = JSON.parse(string);
+        return typeof parsed === 'object' && parsed !== null;
+      } catch (e) {
+        return false;
+      }
+    };
+
+    const isIframeSameOrigin = () => {
+      try {
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        return Boolean(doc);
+      } catch (e) {
+        return false;
+      }
+    };
+
     const handleMessage = (e: MessageEvent) => {
       if (e.origin === 'https://pria-seratus-persen.myscalev.com') {
-        // If data is URL string, redirect parent window
-        try {
-          if (typeof e.data === 'string' && (e.data.startsWith('http://') || e.data.startsWith('https://'))) {
-            new URL(e.data);
-            window.location.href = e.data;
-            return;
-          }
-        } catch (_) {}
-
-        // If data is JSON object with resize instruction
-        try {
-          let message = e.data;
-          if (typeof message === 'string') {
-            message = JSON.parse(message);
-          }
-          if (message && typeof message === 'object' && message.type === 'resize' && message.height) {
-            setIframeHeight(Number(message.height) || 680);
+        if (isUrl(e.data)) {
+          window.location.href = e.data;
+        }
+        if (isJSONObject(e.data) && !isIframeSameOrigin()) {
+          const message = JSON.parse(e.data);
+          if (message.type === 'resize' && message.height) {
+            resizeIframe(Number(message.height));
             setIsLoading(false);
           }
-        } catch (_) {}
+        }
       }
     };
 
     window.addEventListener('message', handleMessage, false);
 
-    // IntersectionObserver to reload once visible if needed
-    const iframe = iframeRef.current;
     let observer: IntersectionObserver | null = null;
-    if (iframe && 'IntersectionObserver' in window) {
+    if ('IntersectionObserver' in window) {
       observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // Ensure iframe is loaded cleanly
             if (iframe && iframe.src) {
-              // already active
+              iframe.src = iframe.src;
             }
-            if (observer) observer.disconnect();
+            observer?.disconnect();
           }
         });
       });
@@ -79,14 +105,14 @@ export const ScalevCheckoutSection: React.FC = () => {
           {isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-10 space-y-2">
               <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-xs font-bold text-gray-600">Memuat formulir pembayaran aman...</p>
+              <p className="text-xs font-bold text-gray-600">Memuat formulir pemesanan Scalev...</p>
             </div>
           )}
 
           <iframe
             id="myiframe"
             ref={iframeRef}
-            src="https://pria-seratus-persen.myscalev.com/checkout-flow-baru"
+            src="https://pria-seratus-persen.myscalev.com/landing-page-baru"
             width="100%"
             style={{
               height: `${iframeHeight}px`,
@@ -95,7 +121,7 @@ export const ScalevCheckoutSection: React.FC = () => {
               display: 'block',
               transition: 'height 0.2s ease',
             }}
-            title="Formulir Checkout Pembayaran Scalev"
+            title="Formulir Checkout Scalev"
             onLoad={() => setIsLoading(false)}
           />
         </div>
